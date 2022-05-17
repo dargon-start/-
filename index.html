@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      .box {
+        position: relative;
+        display: flex;
+        width: 60px;
+        padding: 10px;
+        flex-wrap: wrap;
+      }
+      .coverBox {
+        display: none;
+        position: absolute;
+        opacity: 0.4;
+        z-index: 100;
+        border: 1px dotted #4c4b4b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="coverBox"></div>
+    <div class="box">
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+      <input type="checkbox" />
+    </div>
+
+    <script>
+      //是否按下鼠标
+      let flag = false;
+      //遮罩盒子
+      //鼠标按下和抬起的位置
+      let startX;
+      let startY;
+      let endX;
+      let endY;
+      //获取元素的位置信息
+      function getRect(ele) {
+        const params = ele.getBoundingClientRect();
+        return params;
+      }
+      //获取大盒子的位置
+      let box = document.querySelector(".box");
+      const boxParams = getRect(box);
+      const coverBox = document.querySelector(".coverBox");
+
+      document.addEventListener("mousedown", function (e) {
+        console.log(e);
+
+        flag = true;
+
+        coverBox.style.display = "block";
+        //获取鼠标按下的位置
+        startX = e.x;
+        startY = e.y;
+        //距离box的top和left
+        let left = startX - boxParams.x;
+        let top = startY - boxParams.y;
+        coverBox.style.pageX = startX + "px";
+        coverBox.style.pageY = startY + "px";
+        coverBox.style.top = top + "px";
+        coverBox.style.left = left + "px";
+        document.body.appendChild(coverBox);
+      });
+      document.addEventListener("mousemove", function (e) {
+        if (flag) {
+          let curX = e.x;
+          let curY = e.y;
+          let cbWidth = curX - startX;
+          let cbheight = curY - startY;
+          //设置遮罩盒子的宽和高
+          coverBox.style.width = `${cbWidth}px`;
+          coverBox.style.height = `${cbheight}px`;
+
+          //处理覆盖的选择框
+          let checkboxList = document.querySelectorAll(".box input");
+          //覆盖之前清空上次选中的
+          for (const check of checkboxList) {
+            check.checked = false;
+          }
+
+          //查看每一个选择框是否在覆盖框中
+          for (const check of checkboxList) {
+            let info = getRect(check);
+            let checkX = info.width + info.x;
+            let checkY = info.height + info.y;
+
+            const maxX = Math.max(curX, checkX);
+            const minX = Math.min(startX, info.x);
+            const gapX = maxX - minX;
+
+            const maxY = Math.max(curY, checkY);
+            const minY = Math.min(startY, info.y);
+            const gapY = maxY - minY;
+            /*  如果在最大距离减去最小距离 小于或等于选中区域和复选框盒子的距离，
+                那么说明有重合，即应该选中 
+            */
+            if (
+              gapX <= cbWidth + info.width &&
+              gapY <= cbheight + info.height
+            ) {
+              check.checked = true;
+            }
+            console.log();
+          }
+        }
+      });
+      document.addEventListener("mouseup", function (e) {
+        if (flag) {
+          flag = false;
+          coverBox.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
